@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letrilandia Aventuras</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .oculto { display: none !important; }
+        
+        /* MENÚ PRINCIPAL */
+        #menu-principal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .titulo-principal {
+            color: white;
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .mundos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+        .mundo-card {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .mundo-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        .mundo-emoji {
+            font-size: 70px;
+            margin-bottom: 15px;
+        }
+        .mundo-card h3 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+        .mundo-card p {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        /* JUEGOS */
+        .juego-container {
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+        }
+        .btn-salir {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .btn-salir:hover {
+            transform: scale(1.05);
+        }
+        .puntos-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ffd93d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
+        .emoji-grande {
+            font-size: 90px;
+            margin: 15px 0;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        /* SÍLABAS */
+        .palabra-objetivo {
+            font-size: 1.6em;
+            color: #764ba2;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .zona-construccion {
+            min-height: 70px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .silaba-seleccionada {
+            background: #ffd93d;
+            padding: 10px 18px;
+            border-radius: 15px;
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: pop 0.3s ease;
+        }
+        @keyframes pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .silabas-disponibles {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .silaba {
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 15px;
+            font-size: 1.4em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .silaba:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        .silaba.usado {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* PALABRAS Y OPCIONES */
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .opcion-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 18px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .opcion-btn:hover {
+            transform: translateY(-3px);
+        }
+        .opcion-btn.correcto {
+            background: #4caf50;
+        }
+        .opcion-btn.incorrecto {
+            background: #f44336;
+        }
+        
+        /* RIMAS */
+        .tarjeta-rima {
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .tarjeta-rima:hover {
+            transform: scale(1.05);
+        }
+        .tarjeta-rima .emoji {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        .tarjeta-rima .palabra {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        .tarjeta-seleccionada {
+            background: #ffe0f0 !important;
+            border-color: #ff69b4 !important;
+        }
+        .tarjeta-correcta {
+            background: #a0f0a0 !important;
+            border-color: #4caf50 !important;
+        }
+        
+        /* BOTONES */
+        .btn-accion {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.2em;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 8px 5px;
+            box-shadow: 0 5px 15px rgba(76,175,80,0.4);
+            transition: all 0.3s;
+        }
+        .btn-accion:hover {
+            transform: scale(1.05);
+        }
+        .btn-accion:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-secundario {
+            background: #ff9800;
+            box-shadow: 0 5px 15px rgba(255,152,0,0.4);
+        }
+        .feedback {
+            font-size: 1.6em;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 35px;
+        }
+        .correcto { color: #4caf50; }
+        .incorrecto { color: #f44336; }
+        
+        /* CUENTOS */
+        .pagina-cuento {
+            margin: 20px 0;
+        }
+        .texto-cuento {
+            font-size: 1.3em;
+            color: #666;
+            line-height: 1.8;
+            margin: 20px 0;
+            text-align: left;
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- MENÚ PRINCIPAL -->
+    <div id="menu-principal">
+        <h1 class="titulo-principal">🎮 Letrilandia Aventuras</h1>
+        <div class="mundos-grid">
+            <div class="mundo-card" onclick="irJuego('silabas')">
+                <div class="mundo-emoji">🎵</div>
+                <h3>Sílabas Bailarinas</h3>
+                <p>Forma palabras con sílabas</p>
+            </div>
+            <div class="mundo-card" onclick="irJuego('palabras')">
+                <div class="mundo-emoji">✨</div>
+                <h3>Palabras Mágicas</h3>
+                <p>Adivina la palabra correcta</p>
+            </div>
+            <div class="mundo-card" onclick="irJuego('rimas')">
+                <div class="mundo-emoji">🎶</div>
+                <h3>Rimas Divertidas</h3>
+                <p>Empareja palabras que riman</p>
+            </div>
+            <div class="mundo-card" onclick="irJuego('cuentos')">
+                <div class="mundo-emoji">📖</div>
+                <h3>Mini Cuentos</h3>
+                <p>Lee y aprende</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JUEGO: SÍLABAS -->
+    <div id="juego-silabas" class="oculto">
+        <div class="juego-container">
+            <button class="btn-salir" onclick="volverMenu()">🏠 Salir</button>
+            <div class="puntos-badge">⭐ <span id="puntos-silabas">0</span></div>
+            
+            <h2>🎵 Sílabas Bailarinas</h2>
+            <div class="emoji-grande" id="emoji-silabas"></div>
+            <div class="palabra-objetivo">
+                Forma: <span id="palabra-objetivo"></span>
+            </div>
+            <div class="zona-construccion" id="zona-construccion"></div>
+            <button class="btn-accion btn-secundario" onclick="limpiarSilabas()">🔄 Limpiar</button>
+            <div class="silabas-disponibles" id="silabas-disponibles"></div>
+            <button class="btn-accion" id="btn-comprobar-silabas" onclick="comprobarSilabas()" disabled>
+                ¡Comprobar!
+            </button>
+            <div class="feedback" id="feedback-silabas"></div>
+            <button class="btn-accion" id="btn-siguiente-silabas" onclick="siguienteSilaba()" style="display:none">
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <!-- JUEGO: PALABRAS -->
+    <div id="juego-palabras" class="oculto">
+        <div class="juego-container">
+            <button class="btn-salir" onclick="volverMenu()">🏠 Salir</button>
+            <div class="puntos-badge">⭐ <span id="puntos-palabras">0</span></div>
+            
+            <h2>✨ Palabras Mágicas</h2>
+            <div class="emoji-grande" id="emoji-palabras"></div>
+            <p style="font-size: 1.3em; color: #666; margin: 15px 0;">¿Qué palabra es?</p>
+            <div class="opciones-grid" id="opciones-palabras"></div>
+            <div class="feedback" id="feedback-palabras"></div>
+            <button class="btn-accion" id="btn-siguiente-palabras" onclick="siguientePalabra()" style="display:none">
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <!-- JUEGO: RIMAS -->
+    <div id="juego-rimas" class="oculto">
+        <div class="juego-container">
+            <button class="btn-salir" onclick="volverMenu()">🏠 Salir</button>
+            <div class="puntos-badge">⭐ <span id="puntos-rimas">0</span></div>
+            
+            <h2>🎶 Rimas Divertidas</h2>
+            <p style="font-size: 1.2em; color: #666; margin: 15px 0;">¡Encuentra las palabras que riman!</p>
+            <div id="tarjetas-rimas" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0;"></div>
+            <div class="feedback" id="feedback-rimas"></div>
+        </div>
+    </div>
+
+    <!-- JUEGO: CUENTOS -->
+    <div id="juego-cuentos" class="oculto">
+        <div class="juego-container">
+            <button class="btn-salir" onclick="volverMenu()">🏠 Salir</button>
+            <div class="puntos-badge">⭐ <span id="puntos-cuentos">0</span></div>
+            
+            <h2 id="titulo-cuento">📖 Mini Cuentos</h2>
+            <div id="contenido-cuento"></div>
+        </div>
+    </div>
+
+    <script>
+        let puntosTotales = { silabas: 0, palabras: 0, rimas: 0, cuentos: 0 };
+        let synth = window.speechSynthesis;
+
+        function hablar(texto, velocidad = 0.8) {
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            utterance.rate = velocidad;
+            utterance.pitch = 1.2;
+            synth.speak(utterance);
+        }
+
+        function irJuego(juego) {
+            document.getElementById('menu-principal').classList.add('oculto');
+            document.getElementById('juego-' + juego).classList.remove('oculto');
+            
+            if (juego === 'silabas') iniciarSilabas();
+            else if (juego === 'palabras') iniciarPalabras();
+            else if (juego === 'rimas') iniciarRimas();
+            else if (juego === 'cuentos') iniciarCuentos();
+        }
+
+        function volverMenu() {
+            hablar('Hasta luego');
+            document.querySelectorAll('[id^="juego-"]').forEach(el => el.classList.add('oculto'));
+            document.getElementById('menu-principal').classList.remove('oculto');
+        }
+
+        // ========== SÍLABAS - CONTENIDO EXPANDIDO ==========
+        const palabrasSilabas = [
+            // COLORES
+            { emoji: '🔴', palabra: 'ROJO', silabas: ['RO', 'JO'], señuelos: ['MA', 'TO'] },
+            { emoji: '🔵', palabra: 'AZUL', silabas: ['A', 'ZUL'], señuelos: ['SOL', 'MAR'] },
+            { emoji: '🟡', palabra: 'AMARILLO', silabas: ['A', 'MA', 'RI', 'LLO'], señuelos: ['PE', 'GO'] },
+            { emoji: '🟢', palabra: 'VERDE', silabas: ['VER', 'DE'], señuelos: ['SOL', 'MAR'] },
+            // NÚMEROS
+            { emoji: '1️⃣', palabra: 'UNO', silabas: ['U', 'NO'], señuelos: ['DO', 'SI'] },
+            { emoji: '2️⃣', palabra: 'DOS', silabas: ['DOS'], señuelos: ['UNO', 'TRES'] },
+            { emoji: '3️⃣', palabra: 'TRES', silabas: ['TRES'], señuelos: ['DOS', 'CIEN'] },
+            // FRUTAS
+            { emoji: '🍎', palabra: 'MANZANA', silabas: ['MAN', 'ZA', 'NA'], señuelos: ['PE', 'TO'] },
+            { emoji: '🍌', palabra: 'PLÁTANO', silabas: ['PLÁ', 'TA', 'NO'], señuelos: ['MA', 'RI'] },
+            { emoji: '🍇', palabra: 'UVAS', silabas: ['U', 'VAS'], señuelos: ['PAN', 'SOL'] },
+            { emoji: '🍊', palabra: 'NARANJA', silabas: ['NA', 'RAN', 'JA'], señuelos: ['SO', 'LE'] },
+            // PALABRAS BÁSICAS
+            { emoji: '🏠', palabra: 'CASA', silabas: ['CA', 'SA'], señuelos: ['TA', 'LO'] },
+            { emoji: '🐱', palabra: 'GATO', silabas: ['GA', 'TO'], señuelos: ['MA', 'PE'] },
+            { emoji: '🌙', palabra: 'LUNA', silabas: ['LU', 'NA'], señuelos: ['MA', 'SO'] },
+            { emoji: '☀️', palabra: 'SOL', silabas: ['SOL'], señuelos: ['MAR', 'PAN'] }
+        ];
+        let indiceSilabas = 0;
+        let silabas_seleccionadas = [];
+
+        function iniciarSilabas() {
+            indiceSilabas = 0;
+            cargarPalabraSilabas();
+        }
+
+        function cargarPalabraSilabas() {
+            const datos = palabrasSilabas[indiceSilabas];
+            document.getElementById('emoji-silabas').textContent = datos.emoji;
+            document.getElementById('palabra-objetivo').textContent = datos.palabra;
+            document.getElementById('zona-construccion').innerHTML = '<p style="color: #999;">Toca las sílabas...</p>';
+            document.getElementById('feedback-silabas').textContent = '';
+            document.getElementById('btn-siguiente-silabas').style.display = 'none';
+            
+            silabas_seleccionadas = [];
+            const todasSilabas = [...datos.silabas, ...datos.señuelos].sort(() => Math.random() - 0.5);
+            const contenedor = document.getElementById('silabas-disponibles');
+            contenedor.innerHTML = '';
+            
+            todasSilabas.forEach(silaba => {
+                const btn = document.createElement('button');
+                btn.className = 'silaba';
+                btn.textContent = silaba;
+                btn.onclick = () => seleccionarSilaba(silaba, btn);
+                contenedor.appendChild(btn);
+            });
+            
+            document.getElementById('btn-comprobar-silabas').disabled = true;
+            hablar('Forma la palabra ' + datos.palabra);
+        }
+
+        function seleccionarSilaba(silaba, boton) {
+            if (boton.classList.contains('usado')) return;
+            
+            hablar(silaba, 1);
+            silabas_seleccionadas.push(silaba);
+            boton.classList.add('usado');
+            
+            const zona = document.getElementById('zona-construccion');
+            zona.innerHTML = '';
+            silabas_seleccionadas.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'silaba-seleccionada';
+                div.textContent = s;
+                zona.appendChild(div);
+            });
+            
+            const datos = palabrasSilabas[indiceSilabas];
+            if (silabas_seleccionadas.length === datos.silabas.length) {
+                document.getElementById('btn-comprobar-silabas').disabled = false;
+            }
+        }
+
+        function limpiarSilabas() {
+            silabas_seleccionadas = [];
+            document.querySelectorAll('.silaba').forEach(btn => btn.classList.remove('usado'));
+            document.getElementById('zona-construccion').innerHTML = '<p style="color: #999;">Toca las sílabas...</p>';
+            document.getElementById('btn-comprobar-silabas').disabled = true;
+        }
+
+        function comprobarSilabas() {
+            const datos = palabrasSilabas[indiceSilabas];
+            const palabraFormada = silabas_seleccionadas.join('');
+            const feedback = document.getElementById('feedback-silabas');
+            
+            if (palabraFormada === datos.silabas.join('')) {
+                feedback.textContent = '✅ ¡Muy bien!';
+                feedback.className = 'feedback correcto';
+                puntosTotales.silabas += 10;
+                document.getElementById('puntos-silabas').textContent = puntosTotales.silabas;
+                
+                setTimeout(() => hablar(datos.palabra, 0.6), 500);
+                hablar('¡Muy bien!');
+                
+                document.getElementById('btn-comprobar-silabas').disabled = true;
+                document.getElementById('btn-siguiente-silabas').style.display = 'inline-block';
+            } else {
+                feedback.textContent = '❌ Inténtalo otra vez';
+                feedback.className = 'feedback incorrecto';
+                hablar('Inténtalo otra vez');
+                setTimeout(() => limpiarSilabas(), 1500);
+            }
+        }
+
+        function siguienteSilaba() {
+            indiceSilabas++;
+            if (indiceSilabas >= palabrasSilabas.length) {
+                document.getElementById('feedback-silabas').innerHTML = '🎉 ¡Completaste todo!';
+                document.getElementById('btn-siguiente-silabas').style.display = 'none';
+                hablar('¡Felicidades! Completaste las sílabas');
+                return;
+            }
+            cargarPalabraSilabas();
+        }
+
+        // ========== PALABRAS - CONTENIDO EXPANDIDO ==========
+        const datosPalabras = [
+            // COLORES
+            { emoji: '🔴', palabra: 'ROJO', opciones: ['ROJO', 'AZUL', 'VERDE', 'ROSA'] },
+            { emoji: '🔵', palabra: 'AZUL', opciones: ['ROJO', 'AZUL', 'AMARILLO', 'NEGRO'] },
+            { emoji: '🟢', palabra: 'VERDE', opciones: ['ROSA', 'MORADO', 'VERDE', 'CAFÉ'] },
+            // NÚMEROS
+            { emoji: '1️⃣', palabra: 'UNO', opciones: ['UNO', 'DOS', 'TRES', 'CERO'] },
+            { emoji: '2️⃣', palabra: 'DOS', opciones: ['UNO', 'DOS', 'CINCO', 'SEIS'] },
+            { emoji: '5️⃣', palabra: 'CINCO', opciones: ['CUATRO', 'CINCO', 'SEIS', 'SIETE'] },
+            // FRUTAS
+            { emoji: '🍎', palabra: 'MANZANA', opciones: ['PERA', 'MANZANA', 'NARANJA', 'UVA'] },
+            { emoji: '🍌', palabra: 'PLÁTANO', opciones: ['PLÁTANO', 'SANDÍA', 'MELÓN', 'FRESA'] },
+            { emoji: '🍇', palabra: 'UVAS', opciones: ['MANGO', 'PIÑA', 'UVAS', 'LIMÓN'] },
+            { emoji: '🍊', palabra: 'NARANJA', opciones: ['MANZANA', 'NARANJA', 'DURAZNO', 'PAPAYA'] },
+            // PALABRAS BÁSICAS
+            { emoji: '🏠', palabra: 'CASA', opciones: ['CASA', 'CARRO', 'MESA', 'SILLA'] },
+            { emoji: '🐱', palabra: 'GATO', opciones: ['PERRO', 'GATO', 'PATO', 'OSO'] },
+            { emoji: '☀️', palabra: 'SOL', opciones: ['SOL', 'LUNA', 'MAR', 'RÍO'] },
+            { emoji: '💧', palabra: 'AGUA', opciones: ['FUEGO', 'TIERRA', 'AGUA', 'AIRE'] }
+        ];
+        let indicePalabras = 0;
+
+        function iniciarPalabras() {
+            indicePalabras = 0;
+            cargarPreguntaPalabras();
+        }
+
+        function cargarPreguntaPalabras() {
+            const datos = datosPalabras[indicePalabras];
+            document.getElementById('emoji-palabras').textContent = datos.emoji;
+            document.getElementById('feedback-palabras').textContent = '';
+            document.getElementById('btn-siguiente-palabras').style.display = 'none';
+            
+            const contenedor = document.getElementById('opciones-palabras');
+            contenedor.innerHTML = '';
+            
+            datos.opciones.forEach(opcion => {
+                const btn = document.createElement('button');
+                btn.className = 'opcion-btn';
+                btn.textContent = opcion;
+                btn.onclick = () => responderPalabra(opcion, btn, datos.palabra);
+                contenedor.appendChild(btn);
+            });
+            
+            hablar('¿Qué palabra es?');
+        }
+
+        function responderPalabra(respuesta, boton, correcta) {
+            const botones = document.querySelectorAll('.opcion-btn');
+            botones.forEach(b => b.disabled = true);
+            
+            const feedback = document.getElementById('feedback-palabras');
+            
+            if (respuesta === correcta) {
+                boton.classList.add('correcto');
+                feedback.textContent = '✅ ¡Correcto!';
+                feedback.className = 'feedback correcto';
+                puntosTotales.palabras += 10;
+                document.getElementById('puntos-palabras').textContent = puntosTotales.palabras;
+                hablar('¡Muy bien! ' + correcta);
+                document.getElementById('btn-siguiente-palabras').style.display = 'inline-block';
+            } else {
+                boton.classList.add('incorrecto');
+                feedback.textContent = '❌ Intenta otra vez';
+                feedback.className = 'feedback incorrecto';
+                hablar('Intenta otra vez');
+                setTimeout(() => cargarPreguntaPalabras(), 1500);
+            }
+        }
+
+        function siguientePalabra() {
+            indicePalabras++;
+            if (indicePalabras >= datosPalabras.length) {
+                document.getElementById('feedback-palabras').innerHTML = '🎉 ¡Completaste todo!';
+                document.getElementById('btn-siguiente-palabras').style.display = 'none';
+                hablar('¡Felicidades! Completaste las palabras mágicas');
+                return;
+            }
+            cargarPreguntaPalabras();
+        }
+
+        // ========== RIMAS - CONTENIDO EXPANDIDO ==========
+        const datosRimas = [
+            // COLORES
+            { palabra1: 'ROJO', emoji1: '🔴', palabra2: 'OJO', emoji2: '👁️', id: 1 },
+            { palabra1: 'AMARILLO', emoji1: '🟡', palabra2: 'CASTILLO', emoji2: '🏰', id: 2 },
+            // NÚMEROS/PALABRAS BÁSICAS
+            { palabra1: 'DOS', emoji1: '2️⃣', palabra2: 'ARROZ', emoji2: '🍚', id: 3 },
+            { palabra1: 'TRES', emoji1: '3️⃣', palabra2: 'PEZ', emoji2: '🐟', id: 4 },
+            // FRUTAS/NATURALEZA
+            { palabra1: 'MANZANA', emoji1: '🍎', palabra2: 'VENTANA', emoji2: '🪟', id: 5 },
+            { palabra1: 'NARANJA', emoji1: '🍊', palabra2: 'GRANJA', emoji2: '🚜', id: 6 },
+            // ANIMALES/OTROS
+            { palabra1: 'GATO', emoji1: '🐱', palabra2: 'PATO', emoji2: '🦆', id: 7 },
+            { palabra1: 'LUNA', emoji1: '🌙', palabra2: 'CUNA', emoji2: '🛏️', id: 8 }
+        ];
+        let seleccionRimas = [];
+        let paresEncontrados = [];
+
+        function iniciarRimas() {
+            seleccionRimas = [];
+            paresEncontrados = [];
+            const contenedor = document.getElementById('tarjetas-rimas');
+            contenedor.innerHTML = '';
+            
+            datosRimas.forEach(par => {
+                [1, 2].forEach(num => {
+                    const tarjeta = document.createElement('div');
+                    tarjeta.className = 'tarjeta-rima';
+                    tarjeta.innerHTML = `
+                        <div class="emoji">${num === 1 ? par.emoji1 : par.emoji2}</div>
+                        <div class="palabra">${num === 1 ? par.palabra1 : par.palabra2}</div>
+                    `;
+                    tarjeta.onclick = () => seleccionarRima(par.id, tarjeta, num);
+                    tarjeta.dataset.id = par.id;
+                    tarjeta.dataset.num = num;
+                    contenedor.appendChild(tarjeta);
+                });
+            });
+            
+            hablar('Encuentra las palabras que riman');
+        }
+
+        function seleccionarRima(id, tarjeta, num) {
+            if (paresEncontrados.includes(id)) return;
+            
+            const yaSeleccionada = seleccionRimas.find(s => s.id === id && s.num === num);
+            if (yaSeleccionada) {
+                seleccionRimas = seleccionRimas.filter(s => !(s.id === id && s.num === num));
+                tarjeta.classList.remove('tarjeta-seleccionada');
+            } else {
+                if (seleccionRimas.length >= 2) {
+                    seleccionRimas.forEach(s => s.tarjeta.classList.remove('tarjeta-seleccionada'));
+                    seleccionRimas = [];
+                }
+                
+                seleccionRimas.push({ id, tarjeta, num });
+                tarjeta.classList.add('tarjeta-seleccionada');
+                
+                if (seleccionRimas.length === 2) {
+                    const ids = seleccionRimas.map(s => s.id);
+                    if (ids[0] === ids[1]) {
+                        paresEncontrados.push(id);
+                        seleccionRimas.forEach(s => {
+                            s.tarjeta.classList.remove('tarjeta-seleccionada');
+                            s.tarjeta.classList.add('tarjeta-correcta');
+                        });
+                        document.getElementById('feedback-rimas').innerHTML = '✅ ¡Perfecto!';
+                        document.getElementById('feedback-rimas').className = 'feedback correcto';
+                        puntosTotales.rimas += 20;
+                        document.getElementById('puntos-rimas').textContent = puntosTotales.rimas;
+                        hablar('¡Perfecto! Riman');
+                        
+                        if (paresEncontrados.length === datosRimas.length) {
+                            setTimeout(() => {
+                                document.getElementById('feedback-rimas').innerHTML = '🎉 ¡Completaste todo!';
+                                hablar('¡Felicidades! Encontraste todas las rimas');
+                            }, 1000);
+                        }
+                    } else {
+                        document.getElementById('feedback-rimas').innerHTML = '❌ No riman';
+                        document.getElementById('feedback-rimas').className = 'feedback incorrecto';
+                        hablar('Esas no riman');
+                    }
+                    seleccionRimas = [];
+                }
+            }
+        }
+
+        // ========== CUENTOS - CONTENIDO EXPANDIDO ==========
+        const cuentos = [
+            {
+                titulo: 'Los Colores del Arcoíris',
+                paginas: [
+                    { emoji: '🌈', texto: 'Después de la lluvia apareció un hermoso arcoíris en el cielo.' },
+                    { emoji: '🔴', texto: 'El color rojo era brillante como una manzana.' },
+                    { emoji: '🟡', texto: 'El amarillo brillaba como el sol en el cielo.' },
+                    { emoji: '🔵', texto: 'El azul era profundo como el mar.' }
+                ],
+                pregunta: '¿Cuándo apareció el arcoíris?',
+                opciones: ['Después de la lluvia', 'En la noche', 'En invierno', 'Nunca'],
+                respuesta: 'Después de la lluvia'
+            },
+            {
+                titulo: 'El Mercado de Frutas',
+                paginas: [
+                    { emoji: '🍎', texto: 'María fue al mercado a comprar frutas frescas.' },
+                    { emoji: '🍌', texto: 'Compró plátanos amarillos y dulces.' },
+                    { emoji: '🍇', texto: 'También llevó uvas moradas para hacer jugo.' },
+                    { emoji: '😊', texto: 'María llegó feliz a su casa con todas las frutas.' }
+                ],
+                pregunta: '¿Qué compró María en el mercado?',
+                opciones: ['Frutas', 'Verduras', 'Dulces', 'Juguetes'],
+                respuesta: 'Frutas'
+            },
+            {
+                titulo: 'Contando con los Dedos',
+                paginas: [
+                    { emoji: '✋', texto: 'Pedro aprendió a contar con sus dedos.' },
+                    { emoji: '1️⃣', texto: 'Levantó un dedo y dijo: ¡UNO!' },
+                    { emoji: '2️⃣', texto: 'Levantó dos dedos y dijo: ¡DOS!' },
+                    { emoji: '🎉', texto: 'Ahora Pedro puede contar hasta diez.' }
+                ],
+                pregunta: '¿Con qué aprendió a contar Pedro?',
+                opciones: ['Con sus dedos', 'Con piedras', 'Con libros', 'Con lápices'],
+                respuesta: 'Con sus dedos'
+            }
+        ];
+        let indiceCuento = 0;
+        let paginaCuento = 0;
+
+        function iniciarCuentos() {
+            indiceCuento = 0;
+            paginaCuento = 0;
+            mostrarPaginaCuento();
+        }
+
+        function mostrarPaginaCuento() {
+            const cuento = cuentos[indiceCuento];
+            document.getElementById('titulo-cuento').textContent = cuento.titulo;
+            const contenido = document.getElementById('contenido-cuento');
+            
+            if (paginaCuento < cuento.paginas.length) {
+                const pagina = cuento.paginas[paginaCuento];
+                contenido.innerHTML = `
+                    <div class="pagina-cuento">
+                        <div class="emoji-grande">${pagina.emoji}</div>
+                        <div class="texto-cuento">${pagina.texto}</div>
+                        <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 20px;">
+                            <button class="btn-accion btn-secundario" onclick="anteriorPagina()" ${paginaCuento === 0 ? 'disabled' : ''}>
+                                ← Atrás
+                            </button>
+                            <button class="btn-accion" onclick="siguientePagina()">
+                                Siguiente →
+                            </button>
+                        </div>
+                    </div>
+                `;
+                hablar(pagina.texto, 0.7);
+            } else {
+                mostrarPreguntaCuento();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaCuento > 0) {
+                paginaCuento--;
+                mostrarPaginaCuento();
+            }
+        }
+
+        function siguientePagina() {
+            paginaCuento++;
+            mostrarPaginaCuento();
+        }
+
+        function mostrarPreguntaCuento() {
+            const cuento = cuentos[indiceCuento];
+            const contenido = document.getElementById('contenido-cuento');
+            
+            let html = `
+                <p style="font-size: 1.4em; color: #667eea; margin: 20px 0; font-weight: bold;">
+                    ${cuento.pregunta}
+                </p>
+                <div class="opciones-grid">
+            `;
+            
+            cuento.opciones.forEach(opcion => {
+                html += `
+                    <button class="opcion-btn" onclick="responderCuento('${opcion}', '${cuento.respuesta}', this)">
+                        ${opcion}
+                    </button>
+                `;
+            });
+            
+            html += '</div><div class="feedback" id="feedback-cuento"></div>';
+            contenido.innerHTML = html;
+            hablar(cuento.pregunta);
+        }
+
+        function responderCuento(respuesta, correcta, boton) {
+            const botones = document.querySelectorAll('#contenido-cuento .opcion-btn');
+            botones.forEach(b => b.disabled = true);
+            
+            const feedback = document.getElementById('feedback-cuento');
+            
+            if (respuesta === correcta) {
+                boton.classList.add('correcto');
+                feedback.textContent = '✅ ¡Excelente!';
+                feedback.className = 'feedback correcto';
+                puntosTotales.cuentos += 30;
+                document.getElementById('puntos-cuentos').textContent = puntosTotales.cuentos;
+                hablar('¡Excelente! Entendiste muy bien la historia');
+                
+                setTimeout(() => {
+                    if (indiceCuento < cuentos.length - 1) {
+                        indiceCuento++;
+                        paginaCuento = 0;
+                        mostrarPaginaCuento();
+                    } else {
+                        feedback.innerHTML = '🎉 ¡Completaste todos los cuentos!';
+                        hablar('¡Felicidades! Completaste todos los cuentos');
+                    }
+                }, 3000);
+            } else {
+                boton.classList.add('incorrecto');
+                feedback.textContent = '❌ Intenta de nuevo';
+                feedback.className = 'feedback incorrecto';
+                hablar('Intenta de nuevo');
+            }
+        }
+    </script>
+</body>
+</html>
